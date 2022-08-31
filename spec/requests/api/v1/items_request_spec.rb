@@ -81,4 +81,59 @@ describe "Items API" do
     expect(new_item.unit_price).to eq(item_params[:unit_price])
     expect(new_item.merchant_id).to eq(item_params[:merchant_id])
   end
+
+  xit "can create items only with all required parameters" do
+    merchant = create(:merchant).id
+
+    item_params = ({
+      name: 'Keyboard',
+      description: 'Good for typing',
+      merchant_id: merchant
+      })
+
+      headers = {"CONTENT_TYPE" => "application/json"}
+      post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
+
+      expect(response).to eq(404)
+    end
+
+    it "can edit items" do
+    merchant = create(:merchant).id
+
+    item_params = ({
+      name: 'Keyboard',
+      description: 'Good for typing',
+      unit_price: 25.55,
+      merchant_id: merchant
+    })
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+    post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
+
+    expect(response).to be_successful
+
+    new_item = Item.last
+
+    expect(new_item.name).to eq(item_params[:name])
+    expect(new_item.description).to eq(item_params[:description])
+    expect(new_item.unit_price).to eq(item_params[:unit_price])
+    expect(new_item.merchant_id).to eq(item_params[:merchant_id])
+
+    new_item_params = ({
+      name: 'Monitor',
+      description: 'Good for coding',
+      unit_price: 155.25,
+      merchant_id: merchant
+    })
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+    patch "/api/v1/items/#{new_item.id}", headers: headers, params: JSON.generate(item: new_item_params)
+
+    updated_item = Item.last
+
+    expect(updated_item.name).to eq(new_item_params[:name])
+    expect(updated_item.description).to eq(new_item_params[:description])
+    expect(updated_item.unit_price).to eq(new_item_params[:unit_price])
+    expect(updated_item.merchant_id).to eq(new_item_params[:merchant_id])
+  end
 end
