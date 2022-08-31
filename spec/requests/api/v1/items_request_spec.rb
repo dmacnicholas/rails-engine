@@ -54,5 +54,8 @@ describe "Items API" do
     it "returns 404 if item not found" do
       get "/api/v1/items/1234567"
       expect(response.status).to eq(404)
+
+      get "/api/v1/items/whatever"
+      expect(response.status).to eq(404)
     end
   end
