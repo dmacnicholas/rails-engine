@@ -19,8 +19,8 @@ describe "Merchants API" do
       expect(merchant[:attributes]).to have_key(:name)
       expect(merchant[:attributes][:name]).to be_a(String)
 
-      expect(merchant).to_not have_key(:created_at)
-      expect(merchant).to_not have_key(:updated_at)
+      expect(merchant[:attributes]).to_not have_key(:created_at)
+      expect(merchant[:attributes]).to_not have_key(:updated_at)
     end
   end
 
@@ -33,16 +33,48 @@ describe "Merchants API" do
 
     expect(response).to be_successful
 
-    expect(merchant).to have_key(:id)
-    expect(merchant[:id]).to eq(id)
+    expect(merchant[:data]).to have_key(:id)
+    expect(merchant[:data][:id]).to eq(id.to_s)
 
-    expect(merchant).to have_key(:name)
-    expect(merchant[:name]).to be_a(String)
+    expect(merchant[:data][:attributes]).to have_key(:name)
+    expect(merchant[:data][:attributes][:name]).to be_a(String)
 
-    expect(merchant).to have_key(:created_at)
-    expect(merchant[:created_at]).to be_a(String)
+    expect(merchant[:data][:attributes]).to_not have_key(:created_at)
+    expect(merchant[:data][:attributes]).to_not have_key(:updated_at)
+  end
 
-    expect(merchant).to have_key(:updated_at)
-    expect(merchant[:updated_at]).to be_a(String)
+  it "finds one merchant's items" do
+    merchant = create(:merchant)
+    items = create_list(:item, 10, merchant_id: merchant.id)
+
+    get "/api/v1/merchants/#{merchant.id}/items"
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(response).to be_successful
+
+    expect(items.count).to eq(10)
+
+    items.each do |item|
+      expect(item[:attributes]).to have_key(:name)
+      expect(item[:attributes][:name]).to be_a(String)
+
+      expect(item[:attributes]).to have_key(:description)
+      expect(item[:attributes][:description]).to be_a(String)
+
+      expect(item[:attributes]).to have_key(:unit_price)
+      expect(item[:attributes][:unit_price]).to be_a(Float)
+
+      expect(item[:attributes]).to have_key(:merchant_id)
+      expect(item[:attributes][:merchant_id]).to be_an(Integer)
+    end
+  end
+
+  it "returns 404 if merchant not found" do
+    get "/api/v1/merchants/1234567/items"
+    expect(response.status).to eq(404)
+
+    get "/api/v1/merchants/1234567"
+    expect(response.status).to eq(404)
   end
 end
