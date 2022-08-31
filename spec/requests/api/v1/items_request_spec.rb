@@ -50,4 +50,9 @@ describe "Items API" do
     expect(item[:attributes]).to have_key(:merchant_id)
     expect(item[:attributes][:merchant_id]).to be_an(Integer)
     end
+
+    it "returns 404 if item not found" do
+      get "/api/v1/items/1234567"
+      expect(response.status).to eq(404)
+    end
   end
