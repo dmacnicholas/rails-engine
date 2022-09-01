@@ -136,4 +136,24 @@ describe "Items API" do
     expect(updated_item.unit_price).to eq(new_item_params[:unit_price])
     expect(updated_item.merchant_id).to eq(new_item_params[:merchant_id])
   end
+
+  it "can get an item's merchant" do
+    merchant = create(:merchant)
+
+    item = create(:item, merchant_id: merchant.id)
+
+    get "/api/v1/items/#{item.id}/merchant"
+
+    expect(response).to be_successful
+
+    found_merchant = JSON.parse(response.body, symbolize_names: true)
+
+    expect(found_merchant.count).to eq(1)
+    expect(found_merchant[:data][:attributes][:name]).to eq(merchant.name)
+  end
+
+  it "returns 404 if item not found" do
+    get "/api/v1/items/1234567/merchant"
+    expect(response.status).to eq(404)
+  end  
 end
