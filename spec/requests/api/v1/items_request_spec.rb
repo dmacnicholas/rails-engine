@@ -82,20 +82,20 @@ describe "Items API" do
     expect(new_item.merchant_id).to eq(item_params[:merchant_id])
   end
 
-  xit "can create items only with all required parameters" do
-    merchant = create(:merchant).id
-
-    item_params = ({
-      name: 'Keyboard',
-      description: 'Good for typing',
-      merchant_id: merchant
-      })
-
-      headers = {"CONTENT_TYPE" => "application/json"}
-      post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
-
-      expect(response).to eq(404)
-    end
+  # xit "can create items only with all required parameters" do
+  #   merchant = create(:merchant).id
+  #
+  #   item_params = ({
+  #     name: 'Keyboard',
+  #     description: 'Good for typing',
+  #     merchant_id: merchant
+  #     })
+  #
+  #     headers = {"CONTENT_TYPE" => "application/json"}
+  #     post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
+  #
+  #     expect(response).to eq(404)
+  #   end
 
     it "can edit items" do
     merchant = create(:merchant).id
@@ -155,5 +155,42 @@ describe "Items API" do
   it "returns 404 if item not found" do
     get "/api/v1/items/1234567/merchant"
     expect(response.status).to eq(404)
-  end  
+  end
+
+  it "can delete an item" do
+    merchant = create(:merchant)
+
+    item_1 = create(:item, merchant_id: merchant.id)
+    item_2 = create(:item, merchant_id: merchant.id)
+
+    delete "/api/v1/items/#{item_1.id}"
+
+    expect(response).to be_successful
+
+    get "/api/v1/merchants/#{merchant.id}/items"
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(items.count).to eq(1)
+
+    items.each do |item|
+      expect(item[:attributes][:name]).to_not eq(item_1[:name])
+      expect(item[:attributes][:name]).to eq(item_2[:name])
+    end
+  end
+
+  it "deletes the invoice if deleted item was the only item on the invoice" do
+    merchant = create(:merchant)
+    customer = Customer.create!(first_name: "John", last_name: "Smith")
+
+    invoice = create(:invoice, merchant_id: merchant.id, customer_id: customer.id)
+    item_1 = create(:item, merchant_id: merchant.id)
+    invoice_item = InvoiceItem.create!(item_id: item_1.id, invoice_id: invoice.id)
+
+    expect(invoice.items.count).to eq(1)
+
+    delete "/api/v1/items/#{item_1.id}"
+
+    expect(Invoice.exists?(invoice.id)).to be false
+  end
 end
