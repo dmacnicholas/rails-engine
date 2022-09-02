@@ -77,4 +77,18 @@ describe "Merchants API" do
     get "/api/v1/merchants/1234567"
     expect(response.status).to eq(404)
   end
-end
+
+  it "will return a single result if found" do
+    merchant1 = Merchant.create!(name: "Friday", created_at: Time.now, updated_at: Time.now)
+    merchant2 = Merchant.create!(name: "Ring World", created_at: Time.now, updated_at: Time.now)
+
+    get "/api/v1/merchants/find?name=ring"
+
+    expect(response).to be_successful
+
+    merchants = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(merchants[:attributes]).to have_key(:name)
+    expect(merchants[:attributes][:name]).to eq("Ring World")
+    end
+  end
