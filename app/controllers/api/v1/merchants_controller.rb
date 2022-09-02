@@ -12,4 +12,9 @@ class Api::V1::MerchantsController < ApplicationController
       render status: 404
     end
   end
+
+  def find_one_merchant
+    merchant = Merchant.find_one_by_name(params[:name])
+    render json: MerchantSerializer.new(merchant)
+  end
 end
