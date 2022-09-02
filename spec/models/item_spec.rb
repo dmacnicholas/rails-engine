@@ -5,6 +5,13 @@ RSpec.describe Item, type: :model do
   it { should have_many(:invoice_items) }
   it { should have_many(:invoices).through(:invoice_items) }
 
+  describe 'validations' do
+    it { should validate_presence_of :name }
+    it { should validate_presence_of :description }
+    it { should validate_presence_of :unit_price }
+    it { should validate_presence_of :merchant_id }
+  end
+
   it "will return all items with a match to the search" do
     merchant = Merchant.create!(name: "Turing", created_at: Time.now, updated_at: Time.now)
     item1 = Item.create!(name: "Watch", description: "Nice", unit_price: 30, merchant_id: merchant.id, created_at: Time.now, updated_at: Time.now)
