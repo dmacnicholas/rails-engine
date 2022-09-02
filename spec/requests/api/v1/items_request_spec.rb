@@ -193,4 +193,23 @@ describe "Items API" do
 
     expect(Invoice.exists?(invoice.id)).to be false
   end
-end
+
+  it "will return all items with a match to the search" do
+    merchant = Merchant.create!(name: "Turing", created_at: Time.now, updated_at: Time.now)
+    item1 = Item.create!(name: "Watch", description: "Nice", unit_price: 30, merchant_id: merchant.id, created_at: Time.now, updated_at: Time.now)
+    item2 = Item.create!(name: "Jump Rope", description: "Fun", unit_price: 10, merchant_id: merchant.id, created_at: Time.now, updated_at: Time.now)
+    item3 = Item.create!(name: "Tree", description: "Big", unit_price: 70, merchant_id: merchant.id, created_at: Time.now, updated_at: Time.now)
+
+    get "/api/v1/items/find_all?name=atch"
+
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    items.each do |item|
+      expect(item[:attributes]).to have_key(:name)
+      expect(item[:attributes][:name]).to eq("Watch")
+    end
+  end
+
+  end
